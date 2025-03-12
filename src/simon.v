@@ -127,6 +127,7 @@ module simon (
       seq_counter <= 0;
       tick_counter <= 0;
       millis_counter <= 0;
+      tone_sequence_counter <= 0;
       sound_freq <= 0;
       state <= StatePowerOn;
       led <= 4'b0000;
