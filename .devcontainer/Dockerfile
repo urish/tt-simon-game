@@ -23,5 +23,5 @@ RUN umask 022 && \
     tar zxf - -C /usr/local --strip-components=1 && \
     chmod 755 /usr/local/bin
 
-# Install openlane
-RUN pip3 install openlane==2.1.5
+# Install LibreLane
+RUN pip3 install librelane==2.4.2

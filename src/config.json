@@ -33,7 +33,7 @@
   "PNR_SDC_FILE": "dir::project.sdc",
   "SIGNOFF_SDC_FILE": "dir::project_signoff.sdc",
 
-  "//": "Configuration docs: https://openlane.readthedocs.io/en/latest/reference/configuration.html",
+  "//": "Configuration docs: https://librelane.readthedocs.io/en/latest/reference/configuration.html",
 
   "//": "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
   "//": "!!! DO NOT CHANGE ANYTHING BELOW THIS POINT !!!",
