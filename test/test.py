@@ -1,9 +1,9 @@
-# SPDX-FileCopyrightText: © 2023 Uri Shaked <uri@wokwi.com>
+# SPDX-FileCopyrightText: © 2023-2025 Uri Shaked <uri@wokwi.com>
 # SPDX-License-Identifier: Apache-2.0
 
 import cocotb
 from cocotb.clock import Clock, Timer
-from cocotb.triggers import ClockCycles, Edge, FallingEdge, RisingEdge
+from cocotb.triggers import ClockCycles, FallingEdge, RisingEdge
 import os
 
 GAME_SEQUENCE_TEST_LENGTH = int(os.getenv("GAME_SEQUENCE_TEST_LENGTH", "5"))
@@ -45,7 +45,7 @@ class SimonDriver:
 
     async def read_one_led(self):
         """Returns the index of the currently lit LED, or None if no LED is lit"""
-        leds = self._dut.led.value.integer
+        leds = int(self._dut.led.value)
         if leds == 0b0000:
             return None
         elif leds == 0b0001:
@@ -61,35 +61,35 @@ class SimonDriver:
     async def wait_for_led(self):
         """Wait until one of the LEDs is lit"""
         while await self.read_one_led() is None:
-            await Edge(self._dut.led)
+            await self._dut.led.value_change
 
     async def wait_for_leds_off(self):
         """Wait until all LEDs are off"""
         while await self.read_one_led() is not None:
-            await Edge(self._dut.led)
+            await self._dut.led.value_change
 
     async def read_segments(self):
         """Read the current segment value"""
-        diginv = 0x7F if self._dut.seginv.value.integer else 0
-        if self._dut.seginv.value.integer:
+        diginv = 0x7F if int(self._dut.seginv.value) else 0
+        if int(self._dut.seginv.value):
             await RisingEdge(self._dut.dig1)
         else:
             await FallingEdge(self._dut.dig1)
-        await Timer(10, units="ns")
-        dig1 = decode_7seg(self._dut.seg.value.integer ^ diginv)
-        if self._dut.seginv.value.integer:
+        await Timer(10, unit="ns")
+        dig1 = decode_7seg(int(self._dut.seg.value) ^ diginv)
+        if int(self._dut.seginv.value):
             await RisingEdge(self._dut.dig2)
         else:
             await FallingEdge(self._dut.dig2)
-        await Timer(10, units="ns")
-        dig2 = decode_7seg(self._dut.seg.value.integer ^ diginv)
+        await Timer(10, unit="ns")
+        dig2 = decode_7seg(int(self._dut.seg.value) ^ diginv)
         return f"{dig1}{dig2}"
 
 
 @cocotb.test()
 async def test_simon(dut):
     dut._log.info("start")
-    clock = Clock(dut.clk, 20, units="us")  # 50 kHz clock
+    clock = Clock(dut.clk, 20, unit="us")  # 50 kHz clock
     ticks_per_ms = 50  # Clock ticks per millisecond (at 50 kHz)
     cocotb.start_soon(clock.start())
 
@@ -145,7 +145,7 @@ async def test_simon(dut):
 @cocotb.test()
 async def test_long_game_sequence(dut):
     dut._log.info("Start")
-    clock = Clock(dut.clk, 20, units="us")  # 50 kHz clock
+    clock = Clock(dut.clk, 20, unit="us")  # 50 kHz clock
     ticks_per_ms = 50  # Clock ticks per millisecond (at 50 kHz)
     cocotb.start_soon(clock.start())
 
@@ -205,11 +205,11 @@ async def test_long_game_sequence(dut):
 
 # Skipped by default, as it takes a long time to run. To run it, use:
 #
-#     make TESTCASE=test_pseudo_randomness
+#     make COCOTB_TEST_FILTER=test_pseudo_randomness
 @cocotb.test(skip=True)
 async def test_pseudo_randomness(dut):
     dut._log.info("start")
-    clock = Clock(dut.clk, 20, units="us")  # 50 kHz clock
+    clock = Clock(dut.clk, 20, unit="us")  # 50 kHz clock
     ticks_per_ms = 50  # Clock ticks per millisecond (at 50 kHz)
     cocotb.start_soon(clock.start())
 

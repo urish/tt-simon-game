@@ -34,7 +34,7 @@ jobs:
       - name: Run pseudo-randomness test
         working-directory: test
         run: |
-          make TESTCASE=test_pseudo_randomness COCOTB_RESULTS_FILE=prng_results.xml COMPILE_ARGS="-DNO_VCD" -B
+          make COCOTB_TEST_FILTER=test_pseudo_randomness COCOTB_RESULTS_FILE=prng_results.xml COMPILE_ARGS="-DNO_VCD" -B
           # make will return success even if the test fails, so check for failure in the results.xml
           ! grep failure prng_results.xml
 
