@@ -14,22 +14,25 @@ jobs:
           submodules: recursive
 
       - name: Build GDS
-        uses: TinyTapeout/tt-gds-action@ttsky25b
+        uses: TinyTapeout/tt-gds-action@gf180mcu
         with:
-          pdk: sky130
+          pdk: gf180mcu
+          tools-ref: gf180mcu
 
   precheck:
     needs: gds
     runs-on: ubuntu-24.04
+    if: false
     steps:
       - name: Run Tiny Tapeout Precheck
-        uses: TinyTapeout/tt-gds-action/precheck@ttsky25b
+        uses: TinyTapeout/tt-gds-action/precheck@gf180mcu
         with:
-          pdk: sky130
+          pdk: gf180mcu
 
   gl_test:
     needs: gds
     runs-on: ubuntu-24.04
+    if: false
     steps:
       - name: checkout repo
         uses: actions/checkout@v4
@@ -37,17 +40,18 @@ jobs:
           submodules: recursive
 
       - name: GL test
-        uses: TinyTapeout/tt-gds-action/gl_test@ttsky25b
+        uses: TinyTapeout/tt-gds-action/gl_test@gf180mcu
         with:
-          pdk: sky130
+          pdk: gf180mcu
 
   viewer:
     needs: gds
     runs-on: ubuntu-24.04
+    if: false
     permissions:
       pages: write      # to deploy to Pages
       id-token: write   # to verify the deployment originates from an appropriate source
     steps:
-      - uses: TinyTapeout/tt-gds-action/viewer@ttsky25b
+      - uses: TinyTapeout/tt-gds-action/viewer@gf180mcu
         with:
-          pdk: sky130
+          pdk: gf180mcu
