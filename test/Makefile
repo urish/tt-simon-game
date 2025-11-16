@@ -3,6 +3,7 @@
 
 # defaults
 SIM ?= icarus
+WAVES ?= 1
 TOPLEVEL_LANG ?= verilog
 SRC_DIR = $(PWD)/../src
 PROJECT_SOURCES = clock_divider_stage.v galois_lfsr.v inverter.v ring_osc.v project.v score.v simon.v sound_gen.v
