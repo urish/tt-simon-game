@@ -1,0 +1,53 @@
+** sch_path: /home/uri/p/tt-simon-game/xschem/ring_osc.sch
+**.subckt ring_osc
+x2 net3 net2 VDD VSS sg13g2_inv_1
+x1 net2 net13 VDD VSS sg13g2_inv_1
+x3 net4 net3 VDD VSS sg13g2_inv_1
+x4 net5 net4 VDD VSS sg13g2_inv_1
+x5 net6 net5 VDD VSS sg13g2_inv_1
+x6 net1 net6 VDD VSS sg13g2_inv_1
+x7 net7 net1 VDD VSS sg13g2_inv_1
+x8 net8 net7 VDD VSS sg13g2_inv_1
+x9 net9 net8 VDD VSS sg13g2_inv_1
+x10 net10 net9 VDD VSS sg13g2_inv_1
+x11 net11 net10 VDD VSS sg13g2_inv_1
+x12 net12 net11 VDD VSS sg13g2_inv_1
+x13 clk_out net12 VDD VSS sg13g2_inv_1
+V1 VSS 0 0
+V2 VDD VSS 1.2
+C1 net13 VSS 2f m=1
+C2 net2 VSS 2f m=1
+C3 net3 VSS 2f m=1
+C4 net4 VSS 2f m=1
+C5 net5 VSS 2f m=1
+C6 net6 VSS 2f m=1
+C7 net1 VSS 2f m=1
+C8 net7 VSS 2f m=1
+C9 net8 VSS 2f m=1
+C10 net9 VSS 2f m=1
+C11 net10 VSS 2f m=1
+C12 net11 VSS 2f m=1
+C13 net12 VSS 2f m=1
+x14 net13 en clk_out VDD VSS sg13g2_and2_1
+x15 en VDD VDD VSS sg13g2_buf_1
+**** begin user architecture code
+
+
+.lib cornerMOSlv.lib mos_tt_stat
+.lib cornerMOShv.lib mos_tt_stat
+.include sg13g2_stdcell.spice
+
+.control
+save all
+tran 10p 100n
+write ring_osc.raw
+meas tran tdiff TRIG clk_out VAL=1.1 RISE=50 TARG clk_out VAL=1.1 RISE=51
+let freq_mhz = (1 / (tdiff) / 1e6)
+print freq_mhz
+plot clk_out
+.endc
+
+
+**** end user architecture code
+**.ends
+.end
