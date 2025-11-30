@@ -11,6 +11,7 @@ module ring_osc #(
     parameter CHAIN_LENGTH = 13,
     parameter DIVIDER_BITS = 10
 ) (
+    input wire en,
     output wire clk_out,
     output wire clk_out_div
 );
@@ -18,7 +19,7 @@ module ring_osc #(
   wire [CHAIN_LENGTH-1:0] inv_in;
   wire [CHAIN_LENGTH-1:0] inv_out;
 
-  assign inv_in  = {inv_out[CHAIN_LENGTH-2:0], inv_out[CHAIN_LENGTH-1]};
+  assign inv_in  = {inv_out[CHAIN_LENGTH-2:0], en ? inv_out[CHAIN_LENGTH-1] : 1'b0};
   assign clk_out = inv_out[CHAIN_LENGTH-1];
 
   inverter inv[CHAIN_LENGTH-1:0] (
