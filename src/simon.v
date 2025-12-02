@@ -11,7 +11,7 @@
 module simon (
     input wire clk,
     input wire rst,
-    input wire [15:0] ticks_per_milli,
+    input wire [5:0] ticks_per_milli,
     input wire [3:0] btn,
     input wire segments_invert,
     output reg [3:0] led,
@@ -65,7 +65,7 @@ module simon (
   wire [1:0] seq = lfsr_value[1:0];
   reg [3:0] state;
 
-  reg [15:0] tick_counter;
+  reg [5:0] tick_counter;
   reg [9:0] millis_counter;
   reg [2:0] tone_sequence_counter;
   reg [9:0] sound_freq;

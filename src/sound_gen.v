@@ -1,7 +1,7 @@
 module sound_gen (
     input wire clk,
     input wire rst,
-    input wire [15:0] ticks_per_milli,
+    input wire [5:0] ticks_per_milli,
     input wire [9:0] freq,
     output reg sound
 );
