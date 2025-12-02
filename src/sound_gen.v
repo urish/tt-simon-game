@@ -5,9 +5,9 @@ module sound_gen (
     input wire [9:0] freq,
     output reg sound
 );
-  reg  [31:0] tick_counter;
-  wire [31:0] ticks_per_second = ticks_per_milli * 1000;
-  wire [31:0] freq32 = {22'b0, freq};
+  reg  [15:0] tick_counter;
+  wire [15:0] ticks_per_second = ticks_per_milli * 1000;
+  wire [15:0] freq32 = {6'b0, freq};
 
   always @(posedge clk) begin
     if (rst) begin
