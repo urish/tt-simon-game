@@ -1,0 +1,90 @@
+* ring_osc.spice — transient SPICE check of the 13-stage ring oscillator
+*
+* Ports the ttihp0p4 / ttgf0p2 ring_osc methodology to sky130.
+* See xschem/simulation/ring_osc.spice on origin/ttihp0p4 for the IHP version.
+*
+* Cell selection: synthesis picks sky130_fd_sc_hd__inv_2 for ring inverters
+* (verified from final/spice/tt_um_urish_simon.spice in the ttsky26a GDS run).
+* Wire cap per node: 2 fF lumped, matching the IHP/GF templates. SPEF-derived
+* values from the actual layout were ~0.86 fF/node, so 2 fF here is slightly
+* conservative (gives a lower frequency than the post-layout extraction).
+*
+* sky130_fd_sc_hd cell pin orders (from sky130_fd_sc_hd.spice):
+*   inv_2:  A VGND VNB VPB VPWR Y
+*   and2_1: A B VGND VNB VPB VPWR X
+*   buf_1:  A VGND VNB VPB VPWR X
+
+**.subckt ring_osc
+
+V1 VSS 0 0
+V2 VPWR VSS 1.8
+
+* 13-inverter ring. AND2 with `en` high closes the loop (acts as a buffer);
+* clk_out is the ring output node, fed back through the AND to net13 → x1.
+*    A     VGND VNB VPB  VPWR Y
+x1   net13 VSS  VSS  VPWR VPWR net2  sky130_fd_sc_hd__inv_2
+x2   net2  VSS  VSS  VPWR VPWR net3  sky130_fd_sc_hd__inv_2
+x3   net3  VSS  VSS  VPWR VPWR net4  sky130_fd_sc_hd__inv_2
+x4   net4  VSS  VSS  VPWR VPWR net5  sky130_fd_sc_hd__inv_2
+x5   net5  VSS  VSS  VPWR VPWR net6  sky130_fd_sc_hd__inv_2
+x6   net6  VSS  VSS  VPWR VPWR net1  sky130_fd_sc_hd__inv_2
+x7   net1  VSS  VSS  VPWR VPWR net7  sky130_fd_sc_hd__inv_2
+x8   net7  VSS  VSS  VPWR VPWR net8  sky130_fd_sc_hd__inv_2
+x9   net8  VSS  VSS  VPWR VPWR net9  sky130_fd_sc_hd__inv_2
+x10  net9  VSS  VSS  VPWR VPWR net10 sky130_fd_sc_hd__inv_2
+x11  net10 VSS  VSS  VPWR VPWR net11 sky130_fd_sc_hd__inv_2
+x12  net11 VSS  VSS  VPWR VPWR net12 sky130_fd_sc_hd__inv_2
+x13  net12 VSS  VSS  VPWR VPWR clk_out sky130_fd_sc_hd__inv_2
+
+* Enable: AND2(en, clk_out) -> net13 closes the ring; BUF holds en high.
+*    A   B       VGND VNB  VPB  VPWR X
+x14  en  clk_out VSS  VSS  VPWR VPWR net13 sky130_fd_sc_hd__and2_1
+*    A    VGND VNB  VPB  VPWR X
+x15  VPWR VSS  VSS  VPWR VPWR en           sky130_fd_sc_hd__buf_1
+
+* Lumped wire capacitance per ring node (matches IHP/GF templates).
+C1  net13   VSS 2f
+C2  net2    VSS 2f
+C3  net3    VSS 2f
+C4  net4    VSS 2f
+C5  net5    VSS 2f
+C6  net6    VSS 2f
+C7  net1    VSS 2f
+C8  net7    VSS 2f
+C9  net8    VSS 2f
+C10 net9    VSS 2f
+C11 net10   VSS 2f
+C12 net11   VSS 2f
+C13 net12   VSS 2f
+C14 clk_out VSS 2f
+
+* Break the metastable midpoint: alternate initial conditions along the ring.
+.ic v(net13)=0 v(net2)=1.8 v(net3)=0 v(net4)=1.8 v(net5)=0 v(net6)=1.8
++ v(net1)=0 v(net7)=1.8 v(net8)=0 v(net9)=1.8 v(net10)=0 v(net11)=1.8
++ v(net12)=0 v(clk_out)=1.8
+
+**** begin user architecture code
+
+* Corner: override with `ngspice -b -p "set corner=ff" ring_osc.spice` if desired.
+* Default: tt at 27 C.
+.lib sky130.lib.spice tt
+.include sky130_fd_sc_hd.spice
+
+.control
+save all
+tran 5p 100n uic
+write ring_osc.raw
+
+* Skip startup: measure between the 50th and 51st rising edges (well past steady state).
+meas tran tdiff TRIG v(clk_out) VAL=0.9 RISE=50 TARG v(clk_out) VAL=0.9 RISE=51
+let freq_mhz = 1 / tdiff / 1e6
+print freq_mhz
+let stage_ps = tdiff / 26 * 1e12
+print stage_ps
+
+plot clk_out
+.endc
+
+**** end user architecture code
+**.ends
+.end
