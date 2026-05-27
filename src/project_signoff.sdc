@@ -8,7 +8,7 @@ create_clock $rosc_pin -name $rosc_clock_name -period [expr 1000.0 / $rosc_freq_
 
 # Clock divider stages
 puts "\[INFO] Generating clock divider stages"
-set divider_stages 14
+set divider_stages 11
 set prev_stage_clk_pin $rosc_pin
 set divider_stages_clocks [list]
 for {set i 0} {$i < $divider_stages - 1} {incr i} {

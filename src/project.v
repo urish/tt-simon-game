@@ -32,7 +32,7 @@ module tt_um_urish_simon (
 
   ring_osc #(
       .CHAIN_LENGTH(13),
-      .DIVIDER_BITS(14)  // /16384 -> ~50 kHz from the ~819 MHz ring measured on ttsky25a silicon
+      .DIVIDER_BITS(11)  // /2048 -> ~49.5 kHz from the ~101 MHz GF180 ring (SPICE 3.3V; confirm w/ PEX+silicon)
   ) ring_osc (
       .en(clk_sel),
       .clk_out(clk_ring_osc),
