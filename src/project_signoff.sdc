@@ -1,6 +1,8 @@
 # Ring oscillator clock
+# Constrain at the fast end: GF180 SPICE gives ~136 MHz at the ff corner
+# (3.3 V, 27 C); 200 MHz adds headroom for voltage/temperature beyond that sweep.
 set rosc_clock_name "clk_ring_osc"
-set rosc_freq_mhz 700
+set rosc_freq_mhz 200
 set rosc_clock_net [get_nets $rosc_clock_name]
 set rosc_pin [get_pins -of_objects $rosc_clock_net -filter "direction==output"]
 puts "\[INFO] Using ring oscillator clock $rosc_clock_name"
