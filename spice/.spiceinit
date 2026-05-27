@@ -1,7 +1,7 @@
-* sky130 spiceinit for ring_osc.spice
+* gf180mcu spiceinit for ring_osc.spice
 *
-* Set PDK_ROOT before running ngspice, e.g.:
-*   export PDK_ROOT=/home/ttuser/pdk/ciel/sky130/versions/8afc8346a57fe1ab7934ba5a6056ea8b43078e71
-* (any sky130A install with libs.tech/ngspice + libs.ref/sky130_fd_sc_hd/spice works)
+* Set PDK_ROOT and PDK before running ngspice, e.g.:
+*   export PDK_ROOT=$HOME/.ciel
+*   export PDK=gf180mcuD
 
-setcs sourcepath = ( $sourcepath $PDK_ROOT/sky130A/libs.tech/ngspice $PDK_ROOT/sky130A/libs.ref/sky130_fd_sc_hd/spice )
+setcs sourcepath = ( $sourcepath $PDK_ROOT/$PDK/libs.tech/ngspice $PDK_ROOT/$PDK/libs.ref/gf180mcu_fd_sc_mcu7t5v0/spice )

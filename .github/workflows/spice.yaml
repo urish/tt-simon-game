@@ -5,6 +5,10 @@ on: [push, workflow_dispatch]
 jobs:
   ring_osc:
     runs-on: ubuntu-24.04
+    env:
+      PDK: gf180mcuD
+      PDK_ROOT: /home/runner/.ciel
+      GF_VERSION: 61a056e180dac7dcc6d4eb7529e2231f95105746
     steps:
       - uses: actions/checkout@v6
 
@@ -19,74 +23,64 @@ jobs:
       - name: Install ciel
         run: pip install ciel
 
-      - name: Cache sky130 PDK
+      - name: Cache gf180mcu PDK
         id: pdk-cache
         uses: actions/cache@v5
         with:
           path: ~/.ciel
-          key: ciel-sky130-8afc8346a57fe1ab7934ba5a6056ea8b43078e71
+          key: ciel-gf180mcu-61a056e180dac7dcc6d4eb7529e2231f95105746
 
-      - name: Fetch sky130 PDK
+      - name: Fetch gf180mcu PDK
         if: steps.pdk-cache.outputs.cache-hit != 'true'
-        run: ciel enable --pdk sky130 8afc8346a57fe1ab7934ba5a6056ea8b43078e71
+        run: ciel enable --pdk gf180mcu "$GF_VERSION"
 
       - name: Run ring oscillator SPICE sweep
         working-directory: spice
-        env:
-          PDK_ROOT: /home/runner/.ciel
         run: |
           set -euo pipefail
-          echo "PDK_ROOT=$PDK_ROOT"
-          ls "$PDK_ROOT/sky130A/libs.tech/ngspice" >/dev/null
+          echo "PDK_ROOT=$PDK_ROOT  PDK=$PDK"
+          ls "$PDK_ROOT/$PDK/libs.tech/ngspice/sm141064.ngspice" >/dev/null
 
-          declare -A expected_min=( [tt]=600 [ff]=900 [ss]=400 )
-          declare -A expected_max=( [tt]=1500 [ff]=2200 [ss]=1000 )
+          # Expected ring frequency per corner (MHz), 3.3 V, 14 fF/node.
+          declare -A freq_min=( [typical]=80 [ff]=105 [ss]=55 )
+          declare -A freq_max=( [typical]=125 [ff]=170 [ss]=95 )
 
           fail=0
-          for corner in tt ff ss; do
-            sed "s/\.lib sky130.lib.spice tt/.lib sky130.lib.spice $corner/" ring_osc.spice > "/tmp/ring_${corner}.spice"
+          for corner in typical ff ss; do
+            sed "s/\.lib sm141064.ngspice typical/.lib sm141064.ngspice $corner/" ring_osc.spice > "/tmp/ring_${corner}.spice"
             log="/tmp/ring_${corner}.log"
             ngspice -b "/tmp/ring_${corner}.spice" 2>&1 | tee "$log" >/dev/null
-            freq=$(grep -E '^freq_mhz' "$log" | awk '{print $3}' | head -1)
-            stage=$(grep -E '^stage_ps' "$log" | awk '{print $3}' | head -1)
+            freq=$(grep -E '^fmhz' "$log" | awk '{print $3}' | head -1)
             if [ -z "$freq" ]; then
-              echo "::error::corner $corner: ngspice produced no freq_mhz output"
-              tail -50 "$log"
-              fail=1
-              continue
+              echo "::error::corner $corner: ngspice produced no fmhz output"
+              tail -50 "$log"; fail=1; continue
             fi
-            freq_int=$(python3 -c "print(int(float('$freq')))")
-            stage_fmt=$(python3 -c "print(f'{float(\"$stage\"):.1f}')")
-            min=${expected_min[$corner]}
-            max=${expected_max[$corner]}
+            freq_fmt=$(python3 -c "print(f'{float(\"$freq\"):.0f}')")
+            freq_int=$(python3 -c "print(int(round(float('$freq'))))")
+            min=${freq_min[$corner]}; max=${freq_max[$corner]}
             status="OK"
             if [ "$freq_int" -lt "$min" ] || [ "$freq_int" -gt "$max" ]; then
-              status="OUT OF RANGE [${min}, ${max}] MHz"
-              fail=1
-              echo "::error::corner $corner: ${freq_int} MHz outside expected [${min}, ${max}]"
+              status="OUT OF RANGE [${min}, ${max}] MHz"; fail=1
+              echo "::error::corner $corner: ring ${freq_fmt} MHz outside [${min}, ${max}]"
             fi
-            echo "$corner @ 27 °C: ${freq_int} MHz (${stage_fmt} ps/stage) -- $status"
+            echo "$corner @ 3.3 V, 27 °C: ring ${freq_fmt} MHz -- $status"
           done
 
           {
-            echo "## Ring oscillator SPICE sweep"
+            echo "## Ring oscillator SPICE sweep (GF180, 3.3 V, 14 fF/node)"
             echo ""
-            echo '| Corner | Frequency | Per-stage delay |'
-            echo '| --- | --- | --- |'
-            for corner in tt ff ss; do
+            echo '| Corner | Ring frequency |'
+            echo '| --- | --- |'
+            for corner in typical ff ss; do
               log="/tmp/ring_${corner}.log"
-              freq=$(grep -E '^freq_mhz' "$log" | awk '{print $3}' | head -1)
-              stage=$(grep -E '^stage_ps' "$log" | awk '{print $3}' | head -1)
+              freq=$(grep -E '^fmhz' "$log" | awk '{print $3}' | head -1)
               freq_fmt=$(python3 -c "print(f'{float(\"$freq\"):.0f}')")
-              stage_fmt=$(python3 -c "print(f'{float(\"$stage\"):.1f}')")
-              printf '| %s @ 27 °C | %s MHz | %s ps |\n' "$corner" "$freq_fmt" "$stage_fmt"
+              printf '| %s @ 3.3 V, 27 °C | %s MHz |\n' "$corner" "$freq_fmt"
             done
-            echo ""
           } >> "$GITHUB_STEP_SUMMARY"
 
           if [ "$fail" -ne 0 ]; then
-            echo "::error::ring oscillator out of expected envelope"
-            exit 1
+            echo "::error::ring oscillator out of expected envelope"; exit 1
           fi
 
       - name: Upload ngspice logs
