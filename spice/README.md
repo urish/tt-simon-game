@@ -33,7 +33,7 @@ is correct for both clock sources.
 export PDK_ROOT=$HOME/.ciel        # any gf180mcu install with libs.tech + libs.ref
 export PDK=gf180mcuD
 cd spice/
-ngspice -b ring_osc.spice          # prints fmhz (ring) and div_khz (uo_out[7])
+ngspice -b ring_osc.spice          # prints fmhz (ring frequency in MHz)
 ```
 
 Switch corners by editing the `.lib sm141064.ngspice typical` line to `ff`/`ss`.
