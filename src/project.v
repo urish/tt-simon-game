@@ -34,6 +34,7 @@ module tt_um_urish_simon (
       .CHAIN_LENGTH(13),
       .DIVIDER_BITS(14)  // /16384 -> ~50 kHz from the ~819 MHz ring measured on ttsky25a silicon
   ) ring_osc (
+      .en(clk_sel),
       .clk_out(clk_ring_osc),
       .clk_out_div(clk_internal)
   );
