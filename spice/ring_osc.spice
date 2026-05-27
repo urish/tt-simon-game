@@ -44,6 +44,7 @@ C12 n11     VSS 14f
 C13 n12     VSS 14f
 C14 clk_out VSS 14f
 
+.include design.ngspice
 .lib sm141064.ngspice typical
 .include gf180mcu_fd_sc_mcu7t5v0.spice
 
