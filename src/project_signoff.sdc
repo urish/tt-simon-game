@@ -1,4 +1,6 @@
-# Ring oscillator clock
+# Ring oscillator clock.
+# ttihp25a silicon measured ~457 MHz here, but the divider chain is signed off 
+# at 900 MHz, so there is real margin for a fast-corner die.
 set rosc_clock_name "clk_ring_osc"
 set rosc_freq_mhz 900
 set rosc_clock_net [get_nets $rosc_clock_name]
@@ -8,7 +10,7 @@ create_clock $rosc_pin -name $rosc_clock_name -period [expr 1000.0 / $rosc_freq_
 
 # Clock divider stages
 puts "\[INFO] Generating clock divider stages"
-set divider_stages 14
+set divider_stages 13
 set prev_stage_clk_pin $rosc_pin
 set divider_stages_clocks [list]
 for {set i 0} {$i < $divider_stages - 1} {incr i} {
